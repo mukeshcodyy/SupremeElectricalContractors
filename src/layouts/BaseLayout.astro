@@ -96,6 +96,21 @@ const jsonLd = JSON.stringify({
         );
         items.forEach((item) => observer.observe(item));
       }
+
+      // Subtle 3D tilt toward the mouse on [data-tilt] cards (mouse/trackpad only)
+      if (!reduceMotion && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
+          card.addEventListener('pointermove', (event) => {
+            const box = card.getBoundingClientRect();
+            const x = (event.clientX - box.left) / box.width - 0.5;
+            const y = (event.clientY - box.top) / box.height - 0.5;
+            card.style.setProperty('--tilt-y', `${(x * 10).toFixed(2)}deg`);
+            card.style.setProperty('--tilt-x', `${(y * -8).toFixed(2)}deg`);
+            card.classList.add('is-tilting');
+          });
+          card.addEventListener('pointerleave', () => card.classList.remove('is-tilting'));
+        });
+      }
     </script>
   </body>
 </html>

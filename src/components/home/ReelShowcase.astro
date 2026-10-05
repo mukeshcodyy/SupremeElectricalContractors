@@ -1,0 +1,423 @@
+---
+/**
+ * The business's own vertical reel shown in a 3D-tilted card with floating badges.
+ *
+ * - Video files live in public/video/ (a smaller encode is served to phones).
+ * - The video only starts loading after the page has finished loading, and doesn't
+ *   autoplay for visitors with reduced motion or data saver turned on.
+ * - Without JavaScript it falls back to a normal video with native controls.
+ */
+import { getImage } from 'astro:assets';
+import Icon from '../Icon.astro';
+import posterSource from '../../assets/photos/supreme-reel-poster.jpg';
+
+const poster = await getImage({ src: posterSource, width: 720, format: 'webp' });
+---
+
+<div class="reel-stage" data-reel>
+  <div class="reel-3d">
+    <div class="reel-glow" aria-hidden="true"></div>
+    <div class="reel-card">
+      <video
+        class="reel-video"
+        poster={poster.src}
+        width="720"
+        height="1280"
+        muted
+        loop
+        playsinline
+        controls
+        preload="none"
+        aria-label="Supreme Electrical Contractors reel: drone footage of a multi-storey building site and electricians installing cabling"
+        data-reel-video
+      >
+        <source src="/video/supreme-reel-sm.mp4" type="video/mp4" media="(max-width: 47.99em)" />
+        <source src="/video/supreme-reel.mp4" type="video/mp4" />
+      </video>
+      <span class="reel-glare" aria-hidden="true"></span>
+      <button class="reel-play" type="button" data-reel-start hidden>
+        <Icon name="play" />
+        <span class="visually-hidden">Play video</span>
+      </button>
+    </div>
+
+    <div class="reel-chip reel-chip--live" aria-hidden="true">
+      <span class="reel-dot"></span>
+      On the tools
+    </div>
+    <div class="reel-chip reel-chip--years" aria-hidden="true">
+      <span class="reel-years-num">20+</span>
+      <span class="reel-years-text">years in<br />the trade</span>
+    </div>
+
+    <div class="reel-controls" data-reel-controls hidden>
+      <button class="reel-btn" type="button" data-reel-toggle aria-label="Pause video">
+        <Icon name="pause" class="reel-icon-pause" />
+        <Icon name="play" class="reel-icon-play" />
+      </button>
+      <button class="reel-btn" type="button" data-reel-sound aria-label="Turn sound on">
+        <Icon name="volumeOff" class="reel-icon-muted" />
+        <Icon name="volumeOn" class="reel-icon-sound" />
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-reel]').forEach((stage) => {
+    const video = stage.querySelector<HTMLVideoElement>('[data-reel-video]')!;
+    const controls = stage.querySelector<HTMLElement>('[data-reel-controls]')!;
+    const toggle = stage.querySelector<HTMLButtonElement>('[data-reel-toggle]')!;
+    const sound = stage.querySelector<HTMLButtonElement>('[data-reel-sound]')!;
+    const start = stage.querySelector<HTMLButtonElement>('[data-reel-start]')!;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const saveData = Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
+    let pausedByUser = reduceMotion || saveData;
+
+    // Swap native controls for our own pause + sound buttons
+    video.controls = false;
+    controls.hidden = false;
+    stage.classList.add('is-enhanced');
+
+    const sync = () => {
+      const playing = !video.paused;
+      stage.classList.toggle('is-playing', playing);
+      toggle.setAttribute('aria-label', playing ? 'Pause video' : 'Play video');
+      sound.setAttribute('aria-label', video.muted ? 'Turn sound on' : 'Turn sound off');
+      stage.classList.toggle('is-muted', video.muted);
+      start.hidden = playing || !pausedByUser;
+    };
+
+    const play = () => {
+      video.preload = 'auto';
+      video.play().catch(() => {
+        pausedByUser = true;
+        sync();
+      });
+    };
+
+    ['play', 'pause', 'volumechange'].forEach((type) => video.addEventListener(type, sync));
+
+    toggle.addEventListener('click', () => {
+      if (video.paused) {
+        pausedByUser = false;
+        play();
+      } else {
+        pausedByUser = true;
+        video.pause();
+      }
+    });
+
+    start.addEventListener('click', () => {
+      pausedByUser = false;
+      play();
+    });
+
+    sound.addEventListener('click', () => {
+      video.muted = !video.muted;
+      if (!video.muted && video.paused) {
+        pausedByUser = false;
+        play();
+      }
+    });
+
+    // Start after the page has loaded so the video never competes with the page itself,
+    // and pause while it's scrolled out of view.
+    const begin = () => {
+      new IntersectionObserver(([entry]) => {
+        if (pausedByUser) return;
+        if (entry.isIntersecting) play();
+        else video.pause();
+      }).observe(stage);
+    };
+    if (document.readyState === 'complete') begin();
+    else window.addEventListener('load', begin, { once: true });
+    sync();
+
+    if (reduceMotion) return;
+
+    // 3D tilt: follows the mouse on desktop, follows scrolling on touch screens
+    const setTilt = (x: number, y: number) => {
+      stage.style.setProperty('--ry', `${x}deg`);
+      stage.style.setProperty('--rx', `${y}deg`);
+    };
+
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      stage.addEventListener('pointermove', (event) => {
+        const box = stage.getBoundingClientRect();
+        const px = (event.clientX - box.left) / box.width - 0.5;
+        const py = (event.clientY - box.top) / box.height - 0.5;
+        stage.classList.add('is-tilting');
+        setTilt(px * 22, py * -16);
+      });
+      stage.addEventListener('pointerleave', () => {
+        stage.classList.remove('is-tilting');
+        stage.style.removeProperty('--ry');
+        stage.style.removeProperty('--rx');
+      });
+    } else {
+      let frame = 0;
+      const onScroll = () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const box = stage.getBoundingClientRect();
+          const progress = Math.min(1, Math.max(0, (window.innerHeight - box.top) / (window.innerHeight + box.height)));
+          setTilt(14 - progress * 28, 6 - progress * 8);
+        });
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    }
+  });
+</script>
+
+<style>
+  .reel-stage {
+    --rx: 6deg;
+    --ry: -16deg;
+    position: relative;
+    width: min(100%, 22rem);
+    margin-inline: auto;
+    perspective: 1400px;
+    padding-block: 1.5rem;
+  }
+
+  @media (min-width: 64em) {
+    .reel-stage {
+      width: min(100%, 23rem);
+    }
+  }
+
+  .reel-3d {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  .is-tilting .reel-3d {
+    transition-duration: 0.15s;
+  }
+
+  /* Idle float until someone moves the mouse over it */
+  @media (prefers-reduced-motion: no-preference) {
+    .reel-stage:not(.is-tilting) .reel-card {
+      animation: float 6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes float {
+    50% {
+      translate: 0 -10px;
+    }
+  }
+
+  .reel-card {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border: 3px solid rgb(255 255 255 / 0.12);
+    border-radius: 28px;
+    background: var(--charcoal-2);
+    box-shadow:
+      0 40px 80px -30px rgb(0 0 0 / 0.85),
+      0 0 0 1px rgb(255 211 45 / 0.25);
+  }
+
+  .reel-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: var(--charcoal-2);
+  }
+
+  /* Light sweep that moves with the tilt */
+  .reel-glare {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      calc(110deg + var(--ry) * 2),
+      transparent 35%,
+      rgb(255 255 255 / 0.14) 50%,
+      transparent 65%
+    );
+    mix-blend-mode: screen;
+  }
+
+  .reel-glow {
+    position: absolute;
+    inset: 12% -8% 0;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(255 211 45 / 0.45), transparent);
+    filter: blur(30px);
+    transform: translateZ(-120px);
+    pointer-events: none;
+  }
+
+  .reel-chip {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: var(--radius);
+    font-weight: 800;
+    box-shadow: 0 20px 40px -18px rgb(0 0 0 / 0.8);
+    pointer-events: none;
+  }
+
+  .reel-chip--live {
+    top: 12%;
+    right: -1.25rem;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--line-on-dark);
+    background: rgb(17 18 20 / 0.92);
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: translateZ(70px);
+  }
+
+  .reel-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--yellow);
+    box-shadow: 0 0 0 4px rgb(255 211 45 / 0.25);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .is-playing .reel-dot {
+      animation: blink 1.6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .reel-chip--years {
+    bottom: 14%;
+    left: -1.5rem;
+    padding: 0.8rem 1.1rem 0.8rem 1rem;
+    background: var(--yellow);
+    color: var(--ink);
+    transform: translateZ(110px);
+  }
+
+  .reel-years-num {
+    font-size: 2.1rem;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .reel-years-text {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 29.99em) {
+    .reel-chip--live {
+      right: -0.5rem;
+    }
+
+    .reel-chip--years {
+      left: -0.5rem;
+    }
+  }
+
+  .reel-controls {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    transform: translateZ(40px);
+  }
+
+  .reel-controls[hidden] {
+    display: none;
+  }
+
+  .reel-btn {
+    --icon-size: 1.15rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    border-radius: 50%;
+    background: rgb(17 18 20 / 0.75);
+    color: var(--white);
+    backdrop-filter: blur(6px);
+    transition: background-color 0.15s ease;
+  }
+
+  .reel-btn:hover {
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .reel-btn :global(.reel-icon-play),
+  .reel-btn :global(.reel-icon-sound) {
+    display: none;
+  }
+
+  .reel-stage:not(.is-playing) .reel-btn :global(.reel-icon-pause) {
+    display: none;
+  }
+
+  .reel-stage:not(.is-playing) .reel-btn :global(.reel-icon-play) {
+    display: block;
+  }
+
+  .reel-stage:not(.is-muted) .reel-btn :global(.reel-icon-muted) {
+    display: none;
+  }
+
+  .reel-stage:not(.is-muted) .reel-btn :global(.reel-icon-sound) {
+    display: block;
+  }
+
+  .reel-play {
+    --icon-size: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border: 0;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--ink);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 10px rgb(255 211 45 / 0.25);
+  }
+
+  .reel-play[hidden] {
+    display: none;
+  }
+
+  /* Reduced motion: keep it flat and still */
+  @media (prefers-reduced-motion: reduce) {
+    .reel-stage {
+      --rx: 0deg;
+      --ry: 0deg;
+    }
+
+    .reel-chip--live,
+    .reel-chip--years,
+    .reel-controls,
+    .reel-glow {
+      transform: none;
+    }
+  }
+</style>

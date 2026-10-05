@@ -59,7 +59,24 @@ site is click-to-call.
 The photos and logo come from the business's current website (supremeelectricalcontractors.com.au). Project
 titles describe what each photo shows; the suburbs and job details are still placeholders.
 
-To add or swap a photo, put it in `src/assets/photos/` and set the filename on the matching entry. Astro resizes them, serves
+To add or swap a photo, put it in `src/assets/photos/` and set the filename on the matching entry.
+
+### Hero video (3D reel)
+
+The home hero shows the business's vertical reel in a 3D-tilted card (`src/components/home/ReelShowcase.astro`).
+It follows the mouse on desktop and rotates gently while scrolling on phones. Files are in `public/video/`:
+`supreme-reel.mp4` (720×1280, ~4.8 MB) and `supreme-reel-sm.mp4` for phones (540×960, ~2.8 MB). The video only
+starts loading after the page has loaded, plays muted with pause and sound buttons, pauses when scrolled out of
+view, and doesn't autoplay for visitors with reduced motion or data saver on.
+
+To swap the reel, encode a new vertical clip to the same two file names, for example:
+
+```sh
+ffmpeg -i reel.mov -vf scale=720:1280 -c:v libx264 -crf 30 -maxrate 1500k -bufsize 3000k -pix_fmt yuv420p -c:a aac -b:a 64k -movflags +faststart public/video/supreme-reel.mp4
+ffmpeg -i reel.mov -vf scale=540:960 -c:v libx264 -crf 31 -maxrate 850k -bufsize 1700k -pix_fmt yuv420p -c:a aac -b:a 64k -movflags +faststart public/video/supreme-reel-sm.mp4
+```
+
+Then replace `src/assets/photos/supreme-reel-poster.jpg` with the clip's first frame. Astro resizes them, serves
 AVIF/WebP and lazy-loads them (the photo at the top of each page loads first). See
 `src/assets/photos/README.md` for where each photo is set. Update the `alt` text to describe what each photo
 actually shows.

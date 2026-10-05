@@ -18,6 +18,7 @@ const { project, href, delay = 0 } = Astro.props;
   class:list={['project-card', { 'project-card--link': href }]}
   id={href ? undefined : project.slug}
   data-category={project.category}
+  data-tilt
   data-reveal
   style={`--reveal-delay: ${delay}ms`}
 >
@@ -60,6 +61,13 @@ const { project, href, delay = 0 } = Astro.props;
   .project-card--link:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow);
+  }
+
+  /* 3D tilt toward the mouse (desktop only, set by the script in BaseLayout) */
+  :global(.js) .project-card.is-tilting.is-visible {
+    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(-4px);
+    box-shadow: var(--shadow);
+    transition-duration: 0.12s;
   }
 
   .project-card--link:has(a:focus-visible) {
