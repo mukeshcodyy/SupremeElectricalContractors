@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import ProcessSteps from '../../components/ProcessSteps.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Photo from '../../components/Photo.astro';
+import Icon from '../../components/Icon.astro';
+import { services } from '../../data/services';
+import { breadcrumbSchema } from '../../lib/schema';
+
+const base = Astro.site!;
+const breadcrumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Services', path: '/services/' },
+];
+---
+
+<BaseLayout
+  title="Electrical Services Melbourne North | Supreme Electrical Contractors"
+  description="Residential, commercial, industrial and maintenance electrical services from Epping-based Supreme Electrical Contractors. Licensed and insured. Call 0437 898 022."
+  schema={[breadcrumbSchema(breadcrumbs, base)]}
+>
+  <PageHero
+    breadcrumbs={breadcrumbs}
+    eyebrow="Our services"
+    title="Electrical Services"
+    lead="Residential, commercial, industrial and maintenance electrical work from a licensed and insured team with over 20 years in the trade."
+  />
+
+  <section class="section theme-light" aria-label="Services">
+    <div class="container service-rows">
+      {
+        services.map((service, index) => (
+          <article class:list={['service-row', { 'service-row--flip': index % 2 === 1 }]} aria-labelledby={`service-${service.slug}`}>
+            <Photo
+              file={service.photo.file}
+              alt={service.photo.alt}
+              caption={service.photo.caption}
+              sizes="(min-width: 64em) 45vw, 100vw"
+              class="service-row-photo"
+            />
+            <div class="service-row-copy" data-reveal>
+              <span class="service-row-icon">
+                <Icon name={service.icon} />
+              </span>
+              <h2 id={`service-${service.slug}`}>{service.name}</h2>
+              <p class="lead">{service.summary}</p>
+              <ul class="service-row-list" role="list">
+                {service.included.map((item) => (
+                  <li>
+                    <Icon name="check" />
+                    {item.title}
+                  </li>
+                ))}
+              </ul>
+              <div class="btn-row">
+                <a class="btn btn-dark" href={`/services/${service.slug}/`}>
+                  {service.name} services
+                  <Icon name="arrowRight" class="icon-arrow" />
+                </a>
+                <a class="btn btn-outline" href={`/contact/?service=${service.slug}#quote`}>
+                  Get a quote
+                </a>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section theme-paper" aria-labelledby="process-title">
+    <div class="container">
+      <SectionHeading
+        id="process-title"
+        eyebrow="How it works"
+        title="Three simple steps"
+        lead="Whatever the job, here’s what to expect when you get in touch."
+      />
+      <ProcessSteps />
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .service-rows {
+    display: grid;
+    gap: clamp(3.5rem, 2.5rem + 5vw, 6rem);
+  }
+
+  .service-row {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  @media (min-width: 56em) {
+    .service-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(2.5rem, 5vw, 5rem);
+    }
+
+    .service-row--flip :global(.service-row-photo) {
+      order: 2;
+    }
+  }
+
+  .service-row-icon {
+    --icon-size: 1.5rem;
+    display: inline-grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .service-row-list {
+    --icon-size: 1.1rem;
+    display: grid;
+    gap: 0.5rem;
+    margin-block: 1.5rem 2rem;
+    font-weight: 600;
+  }
+
+  @media (min-width: 30em) {
+    .service-row-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.5rem;
+    }
+  }
+
+  .service-row-list li {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+  }
+
+  .service-row-list :global(.icon) {
+    margin-top: 0.25rem;
+    padding: 0.1rem;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--yellow);
+    stroke-width: 3;
+  }
+</style>

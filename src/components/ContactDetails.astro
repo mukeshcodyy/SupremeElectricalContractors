@@ -1,0 +1,134 @@
+---
+import Icon from './Icon.astro';
+import PlaceholderText from './PlaceholderText.astro';
+import { site, fullAddress, mapsDirectionsUrl } from '../data/site';
+
+interface Props {
+  showHours?: boolean;
+}
+
+const { showHours = false } = Astro.props;
+---
+
+<ul class="contact-list" role="list">
+  <li>
+    <span class="contact-icon"><Icon name="phone" /></span>
+    <div>
+      <span class="contact-label">Call {site.contactName}</span>
+      <a class="contact-value" href={site.phone.href}>{site.phone.display}</a>
+    </div>
+  </li>
+  <li>
+    <span class="contact-icon"><Icon name="mail" /></span>
+    <div>
+      <span class="contact-label">Email</span>
+      <a class="contact-value contact-email" href={`mailto:${site.email}`}>{site.email}</a>
+    </div>
+  </li>
+  <li>
+    <span class="contact-icon"><Icon name="mapPin" /></span>
+    <div>
+      <span class="contact-label">Address</span>
+      <span class="contact-value contact-address">{fullAddress}</span>
+      <a class="contact-sub" href={mapsDirectionsUrl} target="_blank" rel="noopener">
+        Get directions<span class="visually-hidden"> (opens Google Maps in a new tab)</span>
+      </a>
+    </div>
+  </li>
+  {
+    showHours && (
+      <li>
+        <span class="contact-icon">
+          <Icon name="clock" />
+        </span>
+        <div>
+          <span class="contact-label">Hours</span>
+          <span class="contact-value contact-hours">
+            <PlaceholderText value={site.hours} />
+          </span>
+        </div>
+      </li>
+    )
+  }
+  <li>
+    <span class="contact-icon"><Icon name="instagram" /></span>
+    <div>
+      <span class="contact-label">Follow our work</span>
+      <span class="contact-social">
+        <a href={site.social.instagram.url} target="_blank" rel="noopener">
+          Instagram<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+        <a href={site.social.facebook.url} target="_blank" rel="noopener">
+          Facebook<span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      </span>
+    </div>
+  </li>
+</ul>
+
+<style>
+  .contact-list {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .contact-list li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .contact-icon {
+    --icon-size: 1.3rem;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    flex: none;
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--yellow);
+  }
+
+  .contact-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .contact-value {
+    display: block;
+    font-size: var(--step-1);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  a.contact-value {
+    text-decoration-color: var(--accent-text);
+  }
+
+  .contact-email {
+    overflow-wrap: anywhere;
+  }
+
+  .contact-hours {
+    font-size: 1rem;
+  }
+
+  .contact-sub {
+    display: inline-block;
+    margin-top: 0.15rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
+  .contact-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    font-weight: 700;
+  }
+</style>

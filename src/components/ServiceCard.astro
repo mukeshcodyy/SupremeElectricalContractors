@@ -1,0 +1,156 @@
+---
+import Icon from './Icon.astro';
+import type { Service } from '../data/services';
+
+interface Props {
+  service: Service;
+  delay?: number;
+}
+
+const { service, delay = 0 } = Astro.props;
+---
+
+<article class="service-card" data-reveal style={`--reveal-delay: ${delay}ms`}>
+  <span class="service-card-icon"><Icon name={service.icon} /></span>
+  <h3 class="service-card-title">
+    <a href={`/services/${service.slug}/`}>{service.name}</a>
+  </h3>
+  <p class="service-card-summary">{service.summary}</p>
+  <ul class="service-card-list" role="list">
+    {
+      service.highlights.map((item) => (
+        <li>
+          <Icon name="check" />
+          {item}
+        </li>
+      ))
+    }
+  </ul>
+  <span class="service-card-more" aria-hidden="true">
+    Find out more
+    <Icon name="arrowRight" class="icon-arrow" />
+  </span>
+</article>
+
+<style>
+  .service-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    transition:
+      transform 0.25s var(--ease-out),
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  /* Yellow edge that draws in on hover */
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 1.5rem;
+    right: 1.5rem;
+    height: 4px;
+    border-radius: 0 0 4px 4px;
+    background: var(--yellow);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+    border-color: transparent;
+  }
+
+  .service-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .service-card:has(a:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .service-card-icon {
+    --icon-size: 1.6rem;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: var(--radius);
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .service-card-title {
+    font-size: var(--step-2);
+  }
+
+  .service-card-title a {
+    text-decoration: none;
+  }
+
+  .service-card-title a:focus-visible {
+    outline: none;
+  }
+
+  /* Whole card is clickable */
+  .service-card-title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .service-card-summary {
+    color: var(--muted);
+  }
+
+  .service-card-list {
+    --icon-size: 1.1rem;
+    display: grid;
+    gap: 0.45rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .service-card-list li {
+    display: flex;
+    gap: 0.55rem;
+    align-items: flex-start;
+  }
+
+  .service-card-list :global(.icon) {
+    margin-top: 0.2rem;
+    padding: 0.1rem;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--yellow);
+    stroke-width: 3;
+  }
+
+  .service-card-more {
+    --icon-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-text);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+
+  .service-card:hover :global(.icon-arrow) {
+    transform: translateX(3px);
+  }
+</style>

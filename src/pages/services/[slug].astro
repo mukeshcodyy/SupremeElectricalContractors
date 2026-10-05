@@ -1,0 +1,197 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import ProcessSteps from '../../components/ProcessSteps.astro';
+import Faq from '../../components/Faq.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import Icon from '../../components/Icon.astro';
+import { services, type Service } from '../../data/services';
+import { site } from '../../data/site';
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../../lib/schema';
+
+export const getStaticPaths = (() =>
+  services.map((service) => ({ params: { slug: service.slug }, props: { service } }))) satisfies GetStaticPaths;
+
+interface Props {
+  service: Service;
+}
+
+const { service } = Astro.props;
+const base = Astro.site!;
+const quoteHref = `/contact/?service=${service.slug}#quote`;
+const label = service.name.toLowerCase();
+const breadcrumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Services', path: '/services/' },
+  { name: service.name, path: `/services/${service.slug}/` },
+];
+const otherServices = services.filter((item) => item.slug !== service.slug);
+---
+
+<BaseLayout
+  title={service.metaTitle}
+  description={service.metaDescription}
+  quoteHref={quoteHref}
+  schema={[serviceSchema(service, base), faqSchema(service.faqs), breadcrumbSchema(breadcrumbs, base)]}
+>
+  <PageHero
+    breadcrumbs={breadcrumbs}
+    eyebrow={`${service.name} services`}
+    title={service.heading}
+    lead={service.intro[0]}
+    quoteHref={quoteHref}
+    photo={service.photo}
+  >
+    {service.intro.slice(1).map((paragraph) => <p class="hero-extra">{paragraph}</p>)}
+  </PageHero>
+
+  <section class="section theme-light" aria-labelledby="included-title">
+    <div class="container">
+      <SectionHeading
+        id="included-title"
+        eyebrow="What’s included"
+        title={`${service.name} electrical work we do`}
+        lead={service.summary}
+      />
+      <ul class="included-grid" role="list">
+        {
+          service.included.map((item, index) => (
+            <li class="included-item" data-reveal style={`--reveal-delay: ${(index % 3) * 80}ms`}>
+              <span class="included-icon">
+                <Icon name={item.icon} />
+              </span>
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section theme-paper" aria-labelledby="process-title">
+    <div class="container">
+      <SectionHeading
+        id="process-title"
+        eyebrow="How it works"
+        title="Enquire, quote, job done"
+        lead={`Getting ${label} electrical work done should be simple. Here’s how it works.`}
+      />
+      <ProcessSteps />
+    </div>
+  </section>
+
+  <section class="section theme-light" aria-labelledby="faq-title">
+    <div class="container faq-layout">
+      <SectionHeading id="faq-title" eyebrow="FAQ" title="Frequently asked questions">
+        <p class="faq-aside">
+          Can’t see your question? <a href={quoteHref}>Ask us when you request a quote</a>.
+        </p>
+      </SectionHeading>
+      <Faq faqs={service.faqs} />
+    </div>
+  </section>
+
+  <CtaBand
+    title={`Get a free quote for your ${label} job`}
+    text={`Send us a few details and a photo, or call ${site.phone.display} to talk it through.`}
+    quoteHref={quoteHref}
+    quoteLabel="Get a Quote"
+  />
+
+  <section class="section theme-light" aria-labelledby="other-title">
+    <div class="container">
+      <SectionHeading id="other-title" eyebrow="More services" title="Other services" />
+      <div class="card-grid card-grid--3">
+        {otherServices.map((item, index) => <ServiceCard service={item} delay={index * 80} />)}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero-extra {
+    margin-top: 1rem;
+    color: var(--muted-on-dark);
+  }
+
+  .included-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 40em) {
+    .included-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 64em) {
+    .included-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+
+  .included-item {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+
+  .included-icon {
+    --icon-size: 1.5rem;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 0.4rem;
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--yellow);
+  }
+
+  .included-item h3 {
+    font-size: var(--step-1);
+  }
+
+  .included-item p {
+    color: var(--muted);
+  }
+
+  .faq-layout {
+    display: grid;
+    gap: 2rem;
+  }
+
+  @media (min-width: 64em) {
+    .faq-layout {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+      gap: 4rem;
+      align-items: start;
+    }
+
+    .faq-layout :global(.section-head) {
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+    }
+  }
+
+  .faq-aside {
+    margin-top: 1rem;
+    color: var(--muted);
+  }
+
+  .faq-aside a {
+    font-weight: 700;
+    color: var(--fg);
+    text-decoration-color: var(--accent-text);
+  }
+</style>

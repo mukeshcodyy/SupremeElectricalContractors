@@ -1,0 +1,130 @@
+---
+import Icon from '../Icon.astro';
+import PlaceholderText from '../PlaceholderText.astro';
+import { site } from '../../data/site';
+---
+
+<section class="section theme-dark areas" aria-labelledby="areas-title">
+  <div class="container areas-grid">
+    <div class="areas-copy" data-reveal>
+      <p class="eyebrow">Service areas</p>
+      <h2 id="areas-title">Where we work</h2>
+      <p class="lead">
+        Based at {site.address.street}, {site.address.suburb}, in {site.address.region}.
+      </p>
+      <div class="areas-box">
+        <Icon name="mapPin" />
+        <p><PlaceholderText value={site.serviceAreas} /></p>
+      </div>
+      <p class="areas-note">
+        Not sure if we cover your area? Call {site.contactName} on <a href={site.phone.href}>{site.phone.display}</a>.
+      </p>
+    </div>
+
+    <div class="areas-graphic" aria-hidden="true">
+      <svg viewBox="0 0 400 400" fill="none">
+        <circle cx="200" cy="200" r="190" stroke="rgb(255 255 255 / 0.08)" stroke-dasharray="3 7"></circle>
+        <circle cx="200" cy="200" r="140" stroke="rgb(255 255 255 / 0.1)"></circle>
+        <circle cx="200" cy="200" r="90" stroke="rgb(255 255 255 / 0.14)"></circle>
+        <circle class="areas-pulse" cx="200" cy="200" r="44" fill="rgb(255 211 45 / 0.12)" stroke="rgb(255 211 45 / 0.55)"
+        ></circle>
+        <path d="M200 0v400M0 200h400" stroke="rgb(255 255 255 / 0.06)"></path>
+        <path
+          d="M200 222s-26-20-26-40a26 26 0 0 1 52 0c0 20-26 40-26 40Z"
+          fill="#FFD32D"
+          transform="translate(0 -12)"></path>
+        <circle cx="200" cy="170" r="9" fill="#111214"></circle>
+      </svg>
+      <span class="areas-label">{site.address.suburb} {site.address.state} {site.address.postcode}</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .areas-grid {
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  @media (min-width: 56em) {
+    .areas-grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 4rem;
+    }
+  }
+
+  .areas-box {
+    --icon-size: 1.4rem;
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    margin-top: 1.75rem;
+    padding: 1.25rem 1.4rem;
+    border: 1px dashed rgb(255 211 45 / 0.6);
+    border-radius: var(--radius);
+    background: rgb(255 211 45 / 0.06);
+    font-size: var(--step-1);
+  }
+
+  .areas-box :global(.icon) {
+    margin-top: 0.15rem;
+    color: var(--yellow);
+  }
+
+  .areas-note {
+    margin-top: 1.5rem;
+    color: var(--muted-on-dark);
+  }
+
+  .areas-note a {
+    font-weight: 700;
+    color: var(--text-on-dark);
+    text-decoration-color: var(--yellow);
+  }
+
+  .areas-graphic {
+    position: relative;
+    width: min(100%, 26rem);
+    margin-inline: auto;
+  }
+
+  .areas-graphic svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .areas-label {
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 3rem);
+    transform: translateX(-50%);
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    background: var(--ink);
+    border: 1px solid var(--line-on-dark);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .areas-pulse {
+      transform-origin: 200px 200px;
+      animation: pulse 3.2s ease-in-out infinite;
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.12);
+      opacity: 0.65;
+    }
+  }
+</style>

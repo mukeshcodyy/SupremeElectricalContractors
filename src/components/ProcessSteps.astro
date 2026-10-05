@@ -1,0 +1,117 @@
+---
+/** The three-step process: Enquire, Quote, Job done. */
+import Icon from './Icon.astro';
+import { processSteps } from '../data/site';
+import { linkPhones } from '../lib/text';
+---
+
+<ol class="process" role="list">
+  {
+    processSteps.map((step, index) => (
+      <li class="process-step" data-reveal style={`--reveal-delay: ${index * 120}ms`}>
+        <div class="process-marker" aria-hidden="true">
+          <span class="process-num">{index + 1}</span>
+          <Icon name={step.icon} />
+        </div>
+        <div class="process-text">
+          <h3>
+            <span class="visually-hidden">Step {index + 1}: </span>
+            {step.title}
+          </h3>
+          <p set:html={linkPhones(step.text)} />
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .process {
+    display: grid;
+    gap: 1.25rem;
+    counter-reset: step;
+  }
+
+  @media (min-width: 56em) {
+    .process {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  .process-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+
+  @media (min-width: 56em) {
+    .process-step {
+      grid-template-columns: 1fr;
+      padding: 2rem;
+    }
+
+    /* Connector arrow between steps */
+    .process-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 3.1rem;
+      right: -1.15rem;
+      z-index: 1;
+      width: 0.8rem;
+      height: 0.8rem;
+      border-top: 3px solid var(--fg);
+      border-right: 3px solid var(--fg);
+      transform: rotate(45deg);
+      opacity: 0.35;
+    }
+  }
+
+  .process-marker {
+    --icon-size: 1.5rem;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.75rem;
+    height: 3.75rem;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .process-num {
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--yellow);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    box-shadow: 0 0 0 3px var(--surface);
+  }
+
+  .process-text h3 {
+    font-size: var(--step-2);
+  }
+
+  .process-text p {
+    margin-top: 0.5rem;
+    color: var(--muted);
+  }
+
+  .process-text p :global(a) {
+    font-weight: 700;
+    color: var(--fg);
+    text-decoration-color: var(--accent-text);
+  }
+</style>

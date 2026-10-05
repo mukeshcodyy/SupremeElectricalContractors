@@ -1,0 +1,96 @@
+---
+/** Yellow call-to-action band: call or request a quote. */
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+import { linkPhones } from '../lib/text';
+
+interface Props {
+  title?: string;
+  text?: string;
+  quoteHref?: string;
+  quoteLabel?: string;
+}
+
+const {
+  title = `Need an electrician? Talk to ${site.contactName} today.`,
+  text = 'Free quotes for residential, commercial, industrial and maintenance work. Call, or send us a few details and a photo of the job.',
+  quoteHref = '/contact/#quote',
+  quoteLabel = 'Get a Free Quote',
+} = Astro.props;
+---
+
+<section class="cta-band theme-yellow" aria-labelledby="cta-band-title">
+  <svg class="cta-bolt" viewBox="0 0 24 24" aria-hidden="true">
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+  </svg>
+  <div class="container cta-inner" data-reveal>
+    <div class="cta-copy">
+      <h2 id="cta-band-title">{title}</h2>
+      <p set:html={linkPhones(text)} />
+    </div>
+    <div class="btn-row cta-actions">
+      <a class="btn btn-dark btn-lg" href={site.phone.href}>
+        <Icon name="phone" />
+        Call {site.phone.display}
+      </a>
+      <a class="btn btn-outline btn-lg" href={quoteHref}>
+        {quoteLabel}
+        <Icon name="arrowRight" class="icon-arrow" />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-band {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding-block: clamp(3rem, 2.5rem + 3vw, 5rem);
+  }
+
+  .cta-bolt {
+    position: absolute;
+    z-index: -1;
+    right: -2rem;
+    top: 50%;
+    width: clamp(14rem, 30vw, 24rem);
+    height: auto;
+    fill: var(--ink);
+    opacity: 0.07;
+    transform: translateY(-50%) rotate(8deg);
+  }
+
+  .cta-inner {
+    display: grid;
+    gap: 1.75rem;
+    align-items: center;
+  }
+
+  @media (min-width: 64em) {
+    .cta-inner {
+      grid-template-columns: 1fr auto;
+      gap: 3rem;
+    }
+  }
+
+  .cta-copy {
+    max-width: 40rem;
+  }
+
+  .cta-copy p {
+    margin-top: 0.75rem;
+    font-size: var(--step-1);
+    color: var(--muted);
+  }
+
+  .cta-actions {
+    flex-direction: column;
+  }
+
+  @media (min-width: 30em) {
+    .cta-actions {
+      flex-direction: row;
+    }
+  }
+</style>

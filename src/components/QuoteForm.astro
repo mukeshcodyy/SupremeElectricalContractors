@@ -1,0 +1,788 @@
+---
+/**
+ * Quote request form, handled by Netlify Forms (no backend code needed).
+ *
+ * - With JavaScript: validates inline, submits in the background and shows a
+ *   success message in place of the form.
+ * - Without JavaScript: the browser posts the form and Netlify redirects to /thank-you/.
+ * - In local development (`npm run dev`) submissions are simulated so the success
+ *   message can be previewed. Live submissions only work once deployed to Netlify.
+ *
+ * `?service=residential` (or commercial / industrial / maintenance) in the page URL
+ * preselects the job type.
+ */
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+import { services } from '../data/services';
+
+interface Props {
+  /** Prefix for element ids */
+  id?: string;
+}
+
+const { id = 'quote' } = Astro.props;
+const fid = (name: string) => `${id}-${name}`;
+const MAX_PHOTO_MB = 8;
+---
+
+<div class="quote-form-wrap" data-quote-form-wrap>
+  <form
+    class="quote-form"
+    name="quote"
+    method="POST"
+    action="/thank-you/"
+    enctype="multipart/form-data"
+    data-netlify="true"
+    netlify-honeypot="bot-field"
+    data-quote-form
+    data-max-mb={MAX_PHOTO_MB}
+  >
+    <input type="hidden" name="form-name" value="quote" />
+    <p class="form-honeypot">
+      <label>Leave this field empty <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+    </p>
+
+    <p class="form-intro">All fields are required unless marked optional.</p>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for={fid('name')}>Name</label>
+        <input
+          id={fid('name')}
+          name="name"
+          type="text"
+          autocomplete="name"
+          required
+          aria-describedby={fid('name-error')}
+        />
+        <p class="field-error" id={fid('name-error')} data-error></p>
+      </div>
+
+      <div class="field">
+        <label for={fid('phone')}>Phone</label>
+        <input
+          id={fid('phone')}
+          name="phone"
+          type="tel"
+          autocomplete="tel"
+          inputmode="tel"
+          required
+          pattern="[0-9 +\(\)\-]{8,20}"
+          aria-describedby={fid('phone-error')}
+        />
+        <p class="field-error" id={fid('phone-error')} data-error></p>
+      </div>
+
+      <div class="field">
+        <label for={fid('email')}>Email</label>
+        <input
+          id={fid('email')}
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          aria-describedby={fid('email-error')}
+        />
+        <p class="field-error" id={fid('email-error')} data-error></p>
+      </div>
+
+      <div class="field">
+        <label for={fid('suburb')}>Suburb</label>
+        <input
+          id={fid('suburb')}
+          name="suburb"
+          type="text"
+          autocomplete="address-level2"
+          required
+          aria-describedby={fid('suburb-error')}
+        />
+        <p class="field-error" id={fid('suburb-error')} data-error></p>
+      </div>
+
+      <fieldset class="field field-full" aria-describedby={fid('job-type-error')}>
+        <legend>Job type</legend>
+        <div class="choice-grid">
+          {
+            services.map((service) => (
+              <label class="choice">
+                <input type="radio" name="job-type" value={service.name} required />
+                <span class="choice-tile">
+                  <Icon name={service.icon} />
+                  {service.name}
+                </span>
+              </label>
+            ))
+          }
+        </div>
+        <p class="field-error" id={fid('job-type-error')} data-error></p>
+      </fieldset>
+
+      <div class="field field-full">
+        <label for={fid('message')}>Tell us about the job</label>
+        <textarea
+          id={fid('message')}
+          name="message"
+          rows="5"
+          required
+          placeholder="For example: switchboard upgrade and two extra power points in the kitchen"
+          aria-describedby={fid('message-error')}></textarea>
+        <p class="field-error" id={fid('message-error')} data-error></p>
+      </div>
+
+      <div class="field field-full">
+        <label class="field-label" for={fid('photo')}>Photo <span class="optional">(optional)</span></label>
+        <input
+          id={fid('photo')}
+          class="file-input visually-hidden"
+          name="photo"
+          type="file"
+          accept="image/*"
+          aria-describedby={`${fid('photo-hint')} ${fid('photo-error')}`}
+        />
+        <label class="dropzone" for={fid('photo')} data-dropzone>
+          <Icon name="upload" />
+          <span class="dropzone-text"><strong>Add a photo</strong> or drag one here</span>
+          <span class="dropzone-hint" id={fid('photo-hint')}>
+            A photo of your switchboard or the job helps us quote. Images up to {MAX_PHOTO_MB} MB.
+          </span>
+        </label>
+        <div class="file-chosen" data-file-chosen hidden>
+          <Icon name="image" />
+          <span class="file-name" data-file-name></span>
+          <button class="file-remove" type="button" data-file-remove>
+            <Icon name="trash" />
+            Remove<span class="visually-hidden"> photo</span>
+          </button>
+        </div>
+        <p class="field-error" id={fid('photo-error')} data-error></p>
+      </div>
+    </div>
+
+    <div class="form-status" role="alert" data-form-status hidden>
+      <Icon name="alertCircle" />
+      <p>
+        Sorry, your request didn’t send. Please try again, or call {site.contactName} on
+        <a href={site.phone.href}>{site.phone.display}</a>.
+      </p>
+    </div>
+
+    <button class="btn btn-primary btn-lg btn-block form-submit" type="submit" data-submit>
+      <Icon name="loader" class="submit-spinner" />
+      <span data-submit-label>Send quote request</span>
+      <Icon name="arrowRight" class="icon-arrow" />
+    </button>
+
+    <p class="form-footnote">
+      Prefer to talk? Call {site.contactName} on <a href={site.phone.href}>{site.phone.display}</a>.
+    </p>
+  </form>
+
+  <div class="form-success" data-form-success tabindex="-1" hidden>
+    <span class="success-icon"><Icon name="check" /></span>
+    <h3 class="success-title">Thanks<span data-success-name></span> – your quote request has been sent.</h3>
+    <p>
+      {site.contactName} will be in touch soon to talk through your job. If it’s urgent, call
+      <a href={site.phone.href}>{site.phone.display}</a>.
+    </p>
+    <button class="btn btn-outline" type="button" data-form-reset>Send another request</button>
+  </div>
+</div>
+
+<script>
+  type Control = HTMLInputElement | HTMLTextAreaElement;
+
+  const messages: Record<string, string> = {
+    name: 'Please enter your name.',
+    phone: 'Please enter a phone number we can call you on.',
+    email: 'Please enter a valid email address, like name@example.com.',
+    suburb: 'Please enter the suburb where the job is.',
+    'job-type': 'Please choose a job type.',
+    message: 'Please tell us a little about the job.',
+  };
+
+  const formatSize = (bytes: number) =>
+    bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+
+  document.querySelectorAll<HTMLElement>('[data-quote-form-wrap]').forEach((wrap) => {
+    const form = wrap.querySelector<HTMLFormElement>('[data-quote-form]');
+    const success = wrap.querySelector<HTMLElement>('[data-form-success]');
+    if (!form || !success) return;
+
+    const status = form.querySelector<HTMLElement>('[data-form-status]')!;
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]')!;
+    const fileInput = form.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const dropzone = form.querySelector<HTMLElement>('[data-dropzone]')!;
+    const fileChosen = form.querySelector<HTMLElement>('[data-file-chosen]')!;
+    const fileName = form.querySelector<HTMLElement>('[data-file-name]')!;
+    const maxBytes = Number(form.dataset.maxMb ?? 8) * 1024 * 1024;
+
+    // We show our own error messages instead of the browser's.
+    form.noValidate = true;
+
+    // Preselect the job type from ?service=… (links from the service pages)
+    const service = new URLSearchParams(window.location.search).get('service');
+    if (service) {
+      form
+        .querySelectorAll<HTMLInputElement>('input[name="job-type"]')
+        .forEach((radio) => (radio.checked = radio.value.toLowerCase() === service.toLowerCase()));
+    }
+
+    const fieldOf = (control: Element) => control.closest<HTMLElement>('.field');
+
+    const setError = (control: Control, message: string | null) => {
+      const field = fieldOf(control);
+      const error = field?.querySelector<HTMLElement>('[data-error]');
+      if (!field || !error) return;
+      field.classList.toggle('has-error', Boolean(message));
+      error.textContent = message ?? '';
+      const group = control.type === 'radio' ? field.querySelectorAll<Control>('input') : [control];
+      group.forEach((item) =>
+        message ? item.setAttribute('aria-invalid', 'true') : item.removeAttribute('aria-invalid'),
+      );
+    };
+
+    const check = (control: Control): string | null => {
+      const value = control.value.trim();
+      switch (control.name) {
+        case 'phone': {
+          const digits = value.replace(/\D/g, '');
+          return digits.length >= 8 && digits.length <= 15 ? null : messages.phone;
+        }
+        case 'email':
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? null : messages.email;
+        case 'job-type':
+          return form.querySelector('input[name="job-type"]:checked') ? null : messages['job-type'];
+        case 'photo': {
+          const file = (control as HTMLInputElement).files?.[0];
+          if (!file) return null;
+          const isImage = file.type.startsWith('image/') || /\.(heic|heif)$/i.test(file.name);
+          if (!isImage) return 'Please choose an image file, such as a JPG or PNG.';
+          if (file.size > maxBytes) {
+            return `That photo is ${formatSize(file.size)}. Please choose one under ${formatSize(maxBytes)}.`;
+          }
+          return null;
+        }
+        default:
+          return control.required && !value ? (messages[control.name] ?? 'Please fill in this field.') : null;
+      }
+    };
+
+    // One control per field (the first radio stands in for the job type group)
+    const controls = () =>
+      Array.from(form.querySelectorAll<Control>('.field input:not([type="hidden"]), .field textarea')).filter(
+        (control) => control.type !== 'radio' || control === form.querySelector('input[name="job-type"]'),
+      );
+
+    const validateAll = () => {
+      let firstInvalid: Control | null = null;
+      for (const control of controls()) {
+        const message = check(control);
+        setError(control, message);
+        if (message && !firstInvalid) firstInvalid = control;
+      }
+      firstInvalid?.focus();
+      return !firstInvalid;
+    };
+
+    // Check a field when someone leaves it (if they typed something), and clear
+    // errors as soon as they're fixed.
+    form.addEventListener('focusout', (event) => {
+      const control = event.target as Control;
+      if (!control.name || control.type === 'radio' || control.type === 'file') return;
+      if (control.value.trim() || fieldOf(control)?.classList.contains('has-error')) {
+        setError(control, check(control));
+      }
+    });
+
+    form.addEventListener('input', (event) => {
+      const control = event.target as Control;
+      if (fieldOf(control)?.classList.contains('has-error')) setError(control, check(control));
+    });
+
+    form.addEventListener('change', (event) => {
+      const control = event.target as Control;
+      if (control.type === 'radio') setError(control, check(control));
+    });
+
+    // Photo picker
+    const updateFile = () => {
+      const file = fileInput.files?.[0];
+      fileName.textContent = file ? `${file.name} (${formatSize(file.size)})` : '';
+      fileChosen.hidden = !file;
+      dropzone.hidden = Boolean(file);
+      setError(fileInput, check(fileInput));
+    };
+
+    fileInput.addEventListener('change', updateFile);
+
+    form.querySelector('[data-file-remove]')?.addEventListener('click', () => {
+      fileInput.value = '';
+      updateFile();
+      fileInput.focus();
+    });
+
+    ['dragenter', 'dragover'].forEach((type) =>
+      dropzone.addEventListener(type, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('is-dragover');
+      }),
+    );
+    ['dragleave', 'drop'].forEach((type) =>
+      dropzone.addEventListener(type, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('is-dragover');
+      }),
+    );
+    dropzone.addEventListener('drop', (event) => {
+      const file = (event as DragEvent).dataTransfer?.files?.[0];
+      if (!file) return;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      fileInput.files = transfer.files;
+      updateFile();
+    });
+
+    const setSending = (sending: boolean) => {
+      submit.disabled = sending;
+      submit.classList.toggle('is-sending', sending);
+      submitLabel.textContent = sending ? 'Sending…' : 'Send quote request';
+    };
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      status.hidden = true;
+      if (!validateAll()) return;
+
+      setSending(true);
+      const data = new FormData(form);
+
+      try {
+        if (import.meta.env.DEV) {
+          // No form backend in local development – simulate a successful send.
+          await new Promise((resolve) => setTimeout(resolve, 700));
+        } else {
+          const response = await fetch('/', { method: 'POST', body: data });
+          if (!response.ok) throw new Error(`Quote form: server responded ${response.status}`);
+        }
+
+        const firstName = String(data.get('name') ?? '').trim().split(/\s+/)[0];
+        success.querySelector('[data-success-name]')!.textContent = firstName ? `, ${firstName}` : '';
+        form.hidden = true;
+        success.hidden = false;
+        success.focus({ preventScroll: true });
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        success.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+      } catch (error) {
+        console.error(error);
+        status.hidden = false;
+      } finally {
+        setSending(false);
+      }
+    });
+
+    success.querySelector('[data-form-reset]')?.addEventListener('click', () => {
+      form.reset();
+      updateFile();
+      controls().forEach((control) => setError(control, null));
+      success.hidden = true;
+      form.hidden = false;
+      form.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+    });
+  });
+</script>
+
+<style>
+  .quote-form-wrap {
+    container-type: inline-size;
+  }
+
+  .form-honeypot {
+    display: none;
+  }
+
+  .form-intro {
+    margin-bottom: 1.25rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+
+  .form-grid {
+    display: grid;
+    gap: 1.15rem 1rem;
+  }
+
+  @container (min-width: 34rem) {
+    .form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .field-full {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .field label:not(.choice, .dropzone),
+  .field legend {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .field legend {
+    margin-bottom: 0.4rem;
+    padding: 0;
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .field input:not([type='radio'], [type='file']),
+  .field textarea {
+    width: 100%;
+    min-height: 3.25rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text);
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .field textarea {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  .field textarea::placeholder {
+    color: #6b7079;
+  }
+
+  .field input:not([type='radio'], [type='file']):hover,
+  .field textarea:hover {
+    border-color: var(--text);
+  }
+
+  .field input:not([type='radio'], [type='file']):focus-visible,
+  .field textarea:focus-visible {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 4px rgb(255 211 45 / 0.6);
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .has-error input:not([type='radio'], [type='file']),
+  .has-error textarea,
+  .has-error .choice-tile,
+  .has-error .dropzone {
+    border-color: var(--error);
+  }
+
+  .field-error {
+    --icon-size: 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--error);
+  }
+
+  .field-error:empty {
+    display: none;
+  }
+
+  .field-error::before {
+    content: '! ';
+    font-weight: 800;
+  }
+
+  /* Job type tiles */
+  .choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+
+  @container (min-width: 34rem) {
+    .choice-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .choice {
+    position: relative;
+    display: block;
+  }
+
+  .choice input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .choice-tile {
+    --icon-size: 1.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 4.75rem;
+    padding: 0.6rem 0.4rem;
+    border: 2px solid var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: center;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .choice:hover .choice-tile {
+    border-color: var(--text);
+  }
+
+  .choice input:checked + .choice-tile {
+    border-color: var(--ink);
+    background: var(--yellow);
+    color: var(--ink);
+    font-weight: 800;
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+
+  .choice input:focus-visible + .choice-tile {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  /* Photo upload */
+  .dropzone {
+    --icon-size: 1.6rem;
+    display: grid;
+    justify-items: center;
+    gap: 0.3rem;
+    padding: 1.4rem 1rem;
+    border: 2px dashed var(--field-border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--text);
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .dropzone[hidden] {
+    display: none;
+  }
+
+  .dropzone:hover,
+  .dropzone.is-dragover {
+    border-color: var(--ink);
+    background: #fffbea;
+  }
+
+  .file-input:focus-visible + .dropzone {
+    outline: 3px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .dropzone-text {
+    font-size: 1rem;
+  }
+
+  .dropzone-hint {
+    max-width: 34ch;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+
+  .file-chosen {
+    --icon-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.75rem 0.75rem 0.75rem 1rem;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: #fffbea;
+    color: var(--text);
+  }
+
+  .file-chosen[hidden] {
+    display: none;
+  }
+
+  .file-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-remove {
+    --icon-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.5rem;
+    padding: 0.4rem 0.75rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  .file-remove:hover {
+    background: rgb(17 18 20 / 0.06);
+  }
+
+  /* Send */
+  .form-status {
+    --icon-size: 1.3rem;
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border-left: 4px solid var(--error);
+    border-radius: var(--radius-sm);
+    background: #fdecea;
+    color: var(--text);
+  }
+
+  .form-status[hidden] {
+    display: none;
+  }
+
+  .form-status :global(.icon) {
+    color: var(--error);
+    margin-top: 0.15rem;
+  }
+
+  .form-status a {
+    font-weight: 700;
+  }
+
+  .form-submit {
+    margin-top: 1.5rem;
+  }
+
+  .form-submit :global(.submit-spinner) {
+    display: none;
+  }
+
+  .form-submit.is-sending :global(.submit-spinner) {
+    display: block;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .form-submit.is-sending :global(.icon-arrow) {
+    display: none;
+  }
+
+  .form-submit:disabled {
+    cursor: progress;
+    transform: none;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .form-footnote {
+    margin-top: 1rem;
+    font-size: 0.9375rem;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  .form-footnote a {
+    font-weight: 700;
+    color: var(--fg);
+  }
+
+  /* Success message */
+  .form-success {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    padding: clamp(1.5rem, 1rem + 3vw, 3rem) 0.5rem;
+    text-align: center;
+  }
+
+  .form-success[hidden] {
+    display: none;
+  }
+
+  .form-success:focus {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .form-success:not([hidden]) {
+      animation: success-in 0.45s var(--ease-out);
+    }
+  }
+
+  @keyframes success-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
+    }
+  }
+
+  .success-icon {
+    --icon-size: 2.25rem;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--ink);
+    box-shadow: 0 0 0 8px rgb(255 211 45 / 0.3);
+  }
+
+  .success-icon :global(.icon) {
+    stroke-width: 3;
+  }
+
+  .success-title {
+    max-width: 22ch;
+    font-size: var(--step-2);
+  }
+
+  .form-success p {
+    max-width: 40ch;
+    color: var(--muted);
+  }
+
+  .form-success p a {
+    font-weight: 700;
+    color: var(--fg);
+  }
+</style>

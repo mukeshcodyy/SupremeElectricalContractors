@@ -1,0 +1,134 @@
+---
+import Icon from './Icon.astro';
+import Photo from './Photo.astro';
+import PlaceholderText from './PlaceholderText.astro';
+import { categoryLabel, type Project } from '../data/projects';
+
+interface Props {
+  project: Project;
+  /** Makes the whole card a link (used on the home page). */
+  href?: string;
+  delay?: number;
+}
+
+const { project, href, delay = 0 } = Astro.props;
+---
+
+<article
+  class:list={['project-card', { 'project-card--link': href }]}
+  id={href ? undefined : project.slug}
+  data-category={project.category}
+  data-reveal
+  style={`--reveal-delay: ${delay}ms`}
+>
+  <div class="project-media">
+    <Photo
+      file={project.photo}
+      alt={project.alt}
+      caption={project.title}
+      ratio="4 / 3"
+      sizes="(min-width: 64em) 33vw, (min-width: 40em) 50vw, 100vw"
+    />
+    <span class="project-tag">{categoryLabel(project.category)}</span>
+  </div>
+  <div class="project-body">
+    <h3 class="project-title">
+      {href ? <a href={href}>{project.title}</a> : project.title}
+    </h3>
+    <p class="project-suburb">
+      <Icon name="mapPin" />
+      <span><PlaceholderText value={project.suburb} /></span>
+    </p>
+    <p class="project-desc"><PlaceholderText value={project.description} /></p>
+  </div>
+</article>
+
+<style>
+  .project-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    transition:
+      transform 0.25s var(--ease-out),
+      box-shadow 0.25s ease;
+  }
+
+  .project-card--link:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow);
+  }
+
+  .project-card--link:has(a:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .project-media {
+    position: relative;
+  }
+
+  .project-media :global(.photo) {
+    border-radius: 0;
+  }
+
+  .project-tag {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--yellow);
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .project-body {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.25rem 1.4rem 1.5rem;
+  }
+
+  .project-title {
+    font-size: var(--step-1);
+  }
+
+  .project-title a {
+    text-decoration: none;
+  }
+
+  .project-title a:focus-visible {
+    outline: none;
+  }
+
+  .project-title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .project-suburb {
+    --icon-size: 1.05rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .project-suburb :global(.icon) {
+    margin-top: 0.2rem;
+  }
+
+  .project-desc {
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+</style>

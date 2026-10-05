@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/home/Hero.astro';
+import WhyChooseUs from '../components/home/WhyChooseUs.astro';
+import InstagramFeed from '../components/home/InstagramFeed.astro';
+import Reviews from '../components/home/Reviews.astro';
+import ServiceAreas from '../components/home/ServiceAreas.astro';
+import TrustBar from '../components/TrustBar.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import QuoteSection from '../components/QuoteSection.astro';
+import Icon from '../components/Icon.astro';
+import { services } from '../data/services';
+import { projects } from '../data/projects';
+---
+
+<BaseLayout
+  title="Supreme Electrical Contractors | Electrician Epping & Melbourne North"
+  description="Epping electricians with 20+ years’ experience in residential, commercial and industrial work across Melbourne’s north. Call 0437 898 022 for a free quote."
+  quoteHref="#quote"
+>
+  <Hero />
+  <TrustBar />
+
+  <section class="section theme-light" aria-labelledby="services-title">
+    <div class="container">
+      <SectionHeading
+        id="services-title"
+        eyebrow="What we do"
+        title="Electrical services for homes, businesses and industry"
+        lead="From a single power point to a full factory installation, we handle residential, commercial, industrial and maintenance work – safely, tidily and to standard."
+      />
+      <div class="card-grid card-grid--4">
+        {services.map((service, index) => <ServiceCard service={service} delay={index * 80} />)}
+      </div>
+    </div>
+  </section>
+
+  <WhyChooseUs />
+
+  <section class="section theme-paper" aria-labelledby="projects-title">
+    <div class="container">
+      <div class="split-head">
+        <SectionHeading
+          id="projects-title"
+          eyebrow="Recent projects"
+          title="Recent work"
+          lead="A selection of residential, commercial and industrial jobs."
+        />
+        <a class="link-arrow" href="/projects/">
+          View all projects
+          <Icon name="arrowRight" class="icon-arrow" />
+        </a>
+      </div>
+      <div class="card-grid card-grid--3">
+        {
+          projects
+            .slice(0, 6)
+            .map((project, index) => (
+              <ProjectCard project={project} href={`/projects/#${project.slug}`} delay={(index % 3) * 80} />
+            ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <InstagramFeed />
+  <Reviews />
+  <ServiceAreas />
+  <QuoteSection />
+</BaseLayout>

@@ -1,0 +1,88 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { services } from '../data/services';
+---
+
+<BaseLayout
+  title="Page Not Found | Supreme Electrical Contractors"
+  description="Sorry, we couldn’t find that page."
+  noindex
+>
+  <section class="section theme-dark missing">
+    <div class="container missing-inner">
+      <p class="eyebrow">Error 404</p>
+      <h1>We couldn’t find that page</h1>
+      <p class="lead">
+        The page may have moved. Try one of the links below, or call {site.contactName} on
+        <a href={site.phone.href}>{site.phone.display}</a>.
+      </p>
+      <div class="btn-row missing-actions">
+        <a class="btn btn-primary btn-lg" href="/">Go to the home page</a>
+        <a class="btn btn-outline btn-lg" href="/contact/#quote">Get a free quote</a>
+      </div>
+      <ul class="missing-links" role="list">
+        {
+          services.map((service) => (
+            <li>
+              <a href={`/services/${service.slug}/`}>
+                <Icon name={service.icon} />
+                {service.name}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .missing {
+    min-height: 60vh;
+  }
+
+  .missing-inner {
+    max-width: 48rem;
+  }
+
+  .missing .lead a {
+    font-weight: 700;
+    color: var(--text-on-dark);
+    text-decoration-color: var(--yellow);
+  }
+
+  .missing-actions {
+    margin-top: 2rem;
+  }
+
+  .missing-links {
+    --icon-size: 1.15rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+  }
+
+  .missing-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--line-on-dark);
+    border-radius: 999px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .missing-links a:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+  }
+
+  .missing-links :global(.icon) {
+    color: var(--yellow);
+  }
+</style>

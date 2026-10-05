@@ -1,0 +1,35 @@
+---
+/** The business's own logo (yellow and white, for dark backgrounds). */
+import { Image } from 'astro:assets';
+import logo from '../assets/brand/supreme-logo.png';
+
+interface Props {
+  class?: string;
+  /** Load straight away (header) rather than lazily (footer). */
+  eager?: boolean;
+}
+
+const { class: className, eager = false } = Astro.props;
+---
+
+<Image
+  class:list={['site-logo', className]}
+  src={logo}
+  alt="Supreme Electrical Contractors"
+  width={200}
+  densities={[1, 2]}
+  loading={eager ? 'eager' : 'lazy'}
+/>
+
+<style is:global>
+  .site-logo {
+    width: auto;
+    height: 2.25rem;
+  }
+
+  @media (min-width: 64em) {
+    .site-logo {
+      height: 2.75rem;
+    }
+  }
+</style>

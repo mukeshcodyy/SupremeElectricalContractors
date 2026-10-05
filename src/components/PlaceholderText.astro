@@ -1,0 +1,15 @@
+---
+/**
+ * Renders a business detail. While the value is still a placeholder (it starts with "[PLACEHOLDER") it is
+ * highlighted so it's easy to spot; once real details are added it renders as plain text.
+ */
+import { isPlaceholder } from '../data/site';
+
+interface Props {
+  value: string;
+}
+
+const { value } = Astro.props;
+---
+
+{isPlaceholder(value) ? <span class="ph-text" data-placeholder>{value}</span> : value}

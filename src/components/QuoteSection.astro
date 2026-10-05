@@ -1,0 +1,93 @@
+---
+/** Heading, quote form and contact details. The section is the #quote anchor target. */
+import ContactDetails from './ContactDetails.astro';
+import QuoteForm from './QuoteForm.astro';
+import { site } from '../data/site';
+import { linkPhones } from '../lib/text';
+
+interface Props {
+  title?: string;
+  lead?: string;
+  eyebrow?: string;
+  showHours?: boolean;
+  class?: string;
+}
+
+const {
+  title = 'Get a free quote',
+  lead = `Tell us about the job and ${site.contactName} will get back to you. Prefer to talk? Call ${site.phone.display}.`,
+  eyebrow = 'Free quotes',
+  showHours = false,
+  class: className = 'theme-paper',
+} = Astro.props;
+---
+
+<section id="quote" class:list={['section', 'quote-section', className]} aria-labelledby="quote-title">
+  <div class="container quote-grid">
+    <div class="quote-head" data-reveal>
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 id="quote-title">{title}</h2>
+      <p class="lead" set:html={linkPhones(lead)} />
+    </div>
+
+    <div class="quote-card" data-reveal>
+      <QuoteForm />
+    </div>
+
+    <div class="quote-contact" data-reveal>
+      <h3 class="quote-contact-title">Contact details</h3>
+      <ContactDetails showHours={showHours} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .quote-grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-areas:
+      'head'
+      'form'
+      'contact';
+  }
+
+  @media (min-width: 64em) {
+    .quote-grid {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+      grid-template-areas:
+        'head form'
+        'contact form';
+      grid-template-rows: auto 1fr;
+      column-gap: clamp(3rem, 5vw, 5rem);
+      align-items: start;
+    }
+  }
+
+  .quote-head {
+    grid-area: head;
+  }
+
+  .quote-head .lead :global(a) {
+    font-weight: 700;
+    color: var(--fg);
+    text-decoration-color: var(--accent-text);
+  }
+
+  .quote-card {
+    grid-area: form;
+    padding: clamp(1.25rem, 0.75rem + 2.5vw, 2.5rem);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow);
+  }
+
+  .quote-contact {
+    grid-area: contact;
+  }
+
+  .quote-contact-title {
+    margin-bottom: 1.25rem;
+    font-size: var(--step-1);
+  }
+</style>

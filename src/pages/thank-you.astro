@@ -1,0 +1,71 @@
+---
+/** Shown after a quote request when JavaScript is unavailable (Netlify redirects here). */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+---
+
+<BaseLayout
+  title="Thanks for Your Quote Request | Supreme Electrical Contractors"
+  description="Thanks for your quote request. Supreme Electrical Contractors will be in touch soon."
+  noindex
+>
+  <section class="section theme-dark thanks">
+    <div class="container thanks-inner">
+      <span class="thanks-icon"><Icon name="check" /></span>
+      <h1>Thanks – your quote request has been sent</h1>
+      <p class="lead">
+        {site.contactName} will be in touch soon to talk through your job. If it’s urgent, call
+        <a href={site.phone.href}>{site.phone.display}</a>.
+      </p>
+      <div class="btn-row thanks-actions">
+        <a class="btn btn-primary btn-lg" href="/">Back to home</a>
+        <a class="btn btn-outline btn-lg" href="/projects/">See our projects</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .thanks {
+    min-height: 60vh;
+    display: grid;
+    align-items: center;
+  }
+
+  .thanks-inner {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    max-width: 44rem;
+    text-align: center;
+  }
+
+  .thanks-icon {
+    --icon-size: 2.5rem;
+    display: grid;
+    place-items: center;
+    width: 5rem;
+    height: 5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 50%;
+    background: var(--yellow);
+    color: var(--ink);
+    box-shadow: 0 0 0 10px rgb(255 211 45 / 0.2);
+  }
+
+  .thanks-icon :global(.icon) {
+    stroke-width: 3;
+  }
+
+  .thanks .lead a {
+    font-weight: 700;
+    color: var(--text-on-dark);
+    text-decoration-color: var(--yellow);
+  }
+
+  .thanks-actions {
+    justify-content: center;
+    margin-top: 1rem;
+  }
+</style>

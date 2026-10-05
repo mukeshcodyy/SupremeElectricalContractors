@@ -1,0 +1,481 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+import { services } from '../data/services';
+
+interface Props {
+  quoteHref: string;
+}
+
+const { quoteHref } = Astro.props;
+const path = Astro.url.pathname.endsWith('/') ? Astro.url.pathname : `${Astro.url.pathname}/`;
+
+const navItems = [
+  { href: '/services/', label: 'Services' },
+  { href: '/projects/', label: 'Projects' },
+  { href: '/about/', label: 'About' },
+  { href: '/contact/', label: 'Contact' },
+];
+
+const current = (href: string) => (path === href ? 'page' : path.startsWith(href) && href !== '/' ? 'true' : undefined);
+---
+
+<header class="site-header theme-ink">
+  <div class="container header-inner">
+    <a class="header-logo" href="/" aria-current={path === '/' ? 'page' : undefined}>
+      <Logo eager />
+    </a>
+
+    <nav class="nav-desktop" aria-label="Main">
+      <ul class="nav-list" role="list">
+        {
+          navItems.map((item) =>
+            item.href === '/services/' ? (
+              <li class="nav-item has-dropdown">
+                <a class="nav-link" href={item.href} aria-current={current(item.href)}>
+                  {item.label}
+                  <Icon name="chevronDown" class="nav-caret" />
+                </a>
+                <div class="dropdown">
+                  <ul class="dropdown-list" role="list">
+                    {services.map((service) => (
+                      <li>
+                        <a
+                          class="dropdown-link"
+                          href={`/services/${service.slug}/`}
+                          aria-current={current(`/services/${service.slug}/`)}
+                        >
+                          <span class="dropdown-icon">
+                            <Icon name={service.icon} />
+                          </span>
+                          <span>
+                            <span class="dropdown-name">{service.name}</span>
+                            <span class="dropdown-text">{service.highlights[0]}</span>
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </li>
+            ) : (
+              <li class="nav-item">
+                <a class="nav-link" href={item.href} aria-current={current(item.href)}>
+                  {item.label}
+                </a>
+              </li>
+            ),
+          )
+        }
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a class="btn btn-outline header-quote" href={quoteHref}>Get a Quote</a>
+      <a class="btn btn-primary header-call" href={site.phone.href}>
+        <Icon name="phone" />
+        <span>Call {site.phone.display}</span>
+      </a>
+
+      <details class="nav-mobile" data-mobile-nav>
+        <summary class="nav-toggle">
+          <Icon name="menu" class="nav-toggle-open" />
+          <Icon name="x" class="nav-toggle-close" />
+          <span>Menu</span>
+        </summary>
+        <div class="nav-mobile-panel">
+          <nav aria-label="Main">
+            <ul class="mobile-list" role="list">
+              <li>
+                <a class="mobile-link" href="/" aria-current={path === '/' ? 'page' : undefined}>Home</a>
+              </li>
+              {
+                navItems.map((item) => (
+                  <li>
+                    <a class="mobile-link" href={item.href} aria-current={current(item.href)}>
+                      {item.label}
+                    </a>
+                    {item.href === '/services/' && (
+                      <ul class="mobile-sublist" role="list">
+                        {services.map((service) => (
+                          <li>
+                            <a
+                              class="mobile-sublink"
+                              href={`/services/${service.slug}/`}
+                              aria-current={current(`/services/${service.slug}/`)}
+                            >
+                              <Icon name={service.icon} />
+                              {service.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))
+              }
+            </ul>
+          </nav>
+          <div class="mobile-ctas">
+            <a class="btn btn-primary btn-lg" href={site.phone.href}>
+              <Icon name="phone" />
+              Call {site.phone.display}
+            </a>
+            <a class="btn btn-outline btn-lg" href={quoteHref}>Get a Free Quote</a>
+          </div>
+          <p class="mobile-email">
+            <Icon name="mail" />
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  // The mobile menu is a <details> element, so it works without JavaScript.
+  // This adds Escape to close, closing on outside click and after choosing a link.
+  const menu = document.querySelector<HTMLDetailsElement>('[data-mobile-nav]');
+
+  if (menu) {
+    const summary = menu.querySelector('summary');
+    const close = () => {
+      menu.open = false;
+    };
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menu.open) {
+        close();
+        summary?.focus();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (menu.open && event.target instanceof Node && !menu.contains(event.target)) close();
+    });
+
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+
+    window.matchMedia('(min-width: 64em)').addEventListener('change', (event) => {
+      if (event.matches) close();
+    });
+  }
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--line-on-dark);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: var(--header-h);
+  }
+
+  .header-logo {
+    display: inline-flex;
+    margin-right: auto;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .header-actions .btn {
+    min-height: 2.875rem;
+    padding: 0.55em 1.05em;
+    font-size: 1rem;
+  }
+
+  .header-quote,
+  .header-call,
+  .nav-desktop {
+    display: none;
+  }
+
+  @media (min-width: 48em) {
+    .header-call {
+      display: inline-flex;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .nav-desktop {
+      display: block;
+    }
+
+    .nav-mobile {
+      display: none;
+    }
+  }
+
+  @media (min-width: 75em) {
+    .header-quote {
+      display: inline-flex;
+    }
+  }
+
+  /* ----- Desktop navigation ----- */
+
+  .nav-list {
+    display: flex;
+    gap: 0.25rem;
+    margin-right: 0.75rem;
+  }
+
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-link {
+    --icon-size: 1rem;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 1.0625rem;
+    text-decoration: none;
+    color: var(--text-on-dark);
+    transition: color 0.15s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--yellow);
+  }
+
+  .nav-link[aria-current]::after {
+    content: '';
+    position: absolute;
+    left: 0.8rem;
+    right: 0.8rem;
+    bottom: 0.2rem;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--yellow);
+  }
+
+  .nav-link :global(.nav-caret) {
+    transition: transform 0.2s ease;
+  }
+
+  .has-dropdown:hover .nav-link :global(.nav-caret),
+  .has-dropdown:focus-within .nav-link :global(.nav-caret) {
+    transform: rotate(180deg);
+  }
+
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: -0.5rem;
+    padding-top: 0.6rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(6px);
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s var(--ease-out),
+      visibility 0s linear 0.18s;
+  }
+
+  .has-dropdown:hover .dropdown,
+  .has-dropdown:focus-within .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  .dropdown-list {
+    display: grid;
+    gap: 0.15rem;
+    width: 19rem;
+    padding: 0.5rem;
+    border: 1px solid var(--line-on-dark);
+    border-radius: var(--radius);
+    background: var(--charcoal-2);
+    box-shadow: 0 24px 48px -16px rgb(0 0 0 / 0.6);
+  }
+
+  .dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--text-on-dark);
+    transition: background-color 0.15s ease;
+  }
+
+  .dropdown-link:hover,
+  .dropdown-link[aria-current] {
+    background: var(--charcoal-3);
+  }
+
+  .dropdown-icon {
+    --icon-size: 1.25rem;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+    border-radius: var(--radius-sm);
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .dropdown-name {
+    display: block;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .dropdown-text {
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: var(--muted-on-dark);
+  }
+
+  /* ----- Mobile navigation ----- */
+
+  .nav-toggle {
+    --icon-size: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.875rem;
+    padding: 0.5rem 0.9rem;
+    border: 2px solid var(--line-on-dark);
+    border-radius: 10px;
+    font-weight: 700;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .nav-toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .nav-toggle:hover {
+    border-color: var(--muted-on-dark);
+  }
+
+  .nav-toggle :global(.nav-toggle-close),
+  .nav-mobile[open] .nav-toggle :global(.nav-toggle-open) {
+    display: none;
+  }
+
+  .nav-mobile[open] .nav-toggle :global(.nav-toggle-close) {
+    display: block;
+  }
+
+  .nav-mobile[open] .nav-toggle {
+    border-color: var(--yellow);
+  }
+
+  .nav-mobile-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: calc(100vh - var(--header-h));
+    height: calc(100dvh - var(--header-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0.5rem var(--gutter) calc(2rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line-on-dark);
+    background: var(--ink);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .nav-mobile[open] .nav-mobile-panel {
+      animation: panel-in 0.22s var(--ease-out);
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  /* Stop the page scrolling behind the open menu, and hide the bottom bar */
+  :global(html:has(.nav-mobile[open])) {
+    overflow: hidden;
+  }
+
+  .mobile-list > li {
+    border-bottom: 1px solid var(--line-on-dark);
+  }
+
+  .mobile-link {
+    display: block;
+    padding: 0.95rem 0;
+    font-size: 1.375rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .mobile-link[aria-current],
+  .mobile-sublink[aria-current] {
+    color: var(--yellow);
+  }
+
+  .mobile-sublist {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .mobile-sublink {
+    --icon-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 3rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    background: var(--charcoal-2);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .mobile-sublink :global(.icon) {
+    color: var(--yellow);
+  }
+
+  .mobile-ctas {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .mobile-email {
+    --icon-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    color: var(--muted-on-dark);
+    overflow-wrap: anywhere;
+  }
+</style>

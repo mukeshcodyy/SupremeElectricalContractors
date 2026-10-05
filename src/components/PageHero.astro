@@ -1,0 +1,233 @@
+---
+/** Dark intro band at the top of inner pages: breadcrumbs, H1, intro and call/quote buttons. */
+import Icon from './Icon.astro';
+import Photo from './Photo.astro';
+import { site } from '../data/site';
+import { linkPhones } from '../lib/text';
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  /** Trail ending with the current page, e.g. Home › Services › Residential */
+  breadcrumbs?: { name: string; path: string }[];
+  quoteHref?: string;
+  quoteLabel?: string;
+  showCtas?: boolean;
+  /** Let slotted content (e.g. contact cards) use the full container width */
+  wide?: boolean;
+  photo?: { alt: string; caption?: string; file?: string; label?: string };
+}
+
+const {
+  title,
+  eyebrow,
+  lead,
+  breadcrumbs,
+  quoteHref = '/contact/#quote',
+  quoteLabel = 'Get a Free Quote',
+  showCtas = true,
+  wide = false,
+  photo,
+} = Astro.props;
+---
+
+<section class:list={['page-hero', 'theme-dark', { 'page-hero--photo': photo }]}>
+  <div class="container page-hero-grid">
+    <div class:list={['page-hero-copy', { 'page-hero-copy--wide': wide }]}>
+      {
+        breadcrumbs && (
+          <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <ol role="list">
+              {breadcrumbs.map((crumb, index) =>
+                index === breadcrumbs.length - 1 ? (
+                  <li>
+                    <span aria-current="page">{crumb.name}</span>
+                  </li>
+                ) : (
+                  <li>
+                    <a href={crumb.path}>{crumb.name}</a>
+                    <span class="breadcrumb-sep" aria-hidden="true">
+                      /
+                    </span>
+                  </li>
+                ),
+              )}
+            </ol>
+          </nav>
+        )
+      }
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      <h1>{title}</h1>
+      {lead && <p class="page-hero-lead" set:html={linkPhones(lead)} />}
+      <slot />
+      {
+        showCtas && (
+          <div class="btn-row page-hero-ctas">
+            <a class="btn btn-primary btn-lg" href={site.phone.href}>
+              <Icon name="phone" />
+              Call Now
+            </a>
+            <a class="btn btn-outline btn-lg" href={quoteHref}>
+              {quoteLabel}
+              <Icon name="arrowRight" class="icon-arrow" />
+            </a>
+          </div>
+        )
+      }
+      {
+        showCtas && (
+          <p class="page-hero-phone">
+            Or call {site.contactName} directly on <a href={site.phone.href}>{site.phone.display}</a>
+          </p>
+        )
+      }
+    </div>
+    {
+      photo && (
+        <Photo
+          class="page-hero-photo"
+          file={photo.file}
+          alt={photo.alt}
+          label={photo.label}
+          caption={photo.caption}
+          ratio="4 / 3"
+          sizes="(min-width: 64em) 40vw, 100vw"
+          priority
+        />
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding-block: clamp(2.5rem, 2rem + 3vw, 4.5rem) clamp(3rem, 2.5rem + 3.5vw, 5.5rem);
+  }
+
+  /* Faint blueprint grid with a warm glow */
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 90% at 80% 10%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 80% 90% at 80% 10%, #000 20%, transparent 75%);
+  }
+
+  .page-hero::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: -30%;
+    right: -10%;
+    width: 60%;
+    aspect-ratio: 1;
+    background: radial-gradient(circle, rgb(255 211 45 / 0.12), transparent 65%);
+    pointer-events: none;
+  }
+
+  .page-hero-grid {
+    display: grid;
+    gap: 2.5rem;
+    align-items: center;
+  }
+
+  @media (min-width: 64em) {
+    .page-hero--photo .page-hero-grid {
+      grid-template-columns: 1.15fr 1fr;
+      gap: 4rem;
+    }
+  }
+
+  .page-hero-copy {
+    max-width: 44rem;
+  }
+
+  .page-hero-copy--wide {
+    max-width: none;
+  }
+
+  .page-hero-lead {
+    max-width: 44rem;
+    margin-top: 1.25rem;
+    font-size: var(--step-1);
+    line-height: 1.55;
+    color: var(--muted-on-dark);
+  }
+
+  .page-hero-lead :global(a) {
+    color: var(--text-on-dark);
+    font-weight: 700;
+    text-decoration-color: var(--yellow);
+  }
+
+  .page-hero-ctas {
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 29.99em) {
+    .page-hero-ctas .btn {
+      flex: 1 1 100%;
+    }
+  }
+
+  .page-hero-phone {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: var(--muted-on-dark);
+  }
+
+  .page-hero-phone a {
+    font-weight: 700;
+    color: var(--text-on-dark);
+    text-decoration-color: var(--yellow);
+  }
+
+  .breadcrumbs {
+    margin-bottom: 1.5rem;
+    font-size: 0.9375rem;
+  }
+
+  .breadcrumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .breadcrumbs li {
+    display: inline-flex;
+    gap: 0.35rem;
+  }
+
+  .breadcrumbs a {
+    color: var(--muted-on-dark);
+    text-decoration: none;
+  }
+
+  .breadcrumbs a:hover {
+    color: var(--yellow);
+    text-decoration: underline;
+  }
+
+  .breadcrumb-sep {
+    color: var(--muted-on-dark);
+    opacity: 0.6;
+  }
+
+  .breadcrumbs [aria-current] {
+    color: var(--text-on-dark);
+    font-weight: 600;
+  }
+
+  .page-hero-copy > .eyebrow {
+    margin-bottom: 0.9rem;
+  }
+</style>

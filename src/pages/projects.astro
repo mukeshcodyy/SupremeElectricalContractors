@@ -1,0 +1,171 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { projects, projectCategories } from '../data/projects';
+import { breadcrumbSchema } from '../lib/schema';
+
+const base = Astro.site!;
+const breadcrumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'Projects', path: '/projects/' },
+];
+const filters = [{ id: 'all', label: 'All projects' }, ...projectCategories];
+const countFor = (id: string) => (id === 'all' ? projects.length : projects.filter((p) => p.category === id).length);
+---
+
+<BaseLayout
+  title="Electrical Projects | Supreme Electrical Contractors"
+  description="Recent residential, commercial and industrial electrical projects by Supreme Electrical Contractors, based in Epping in Melbourne’s north."
+  schema={[breadcrumbSchema(breadcrumbs, base)]}
+>
+  <PageHero
+    breadcrumbs={breadcrumbs}
+    eyebrow="Our work"
+    title="Recent Projects"
+    lead="A look at recent residential, commercial and industrial electrical work by our team."
+  />
+
+  <section class="section theme-paper" aria-labelledby="gallery-title">
+    <div class="container">
+      <h2 id="gallery-title" class="visually-hidden">Project gallery</h2>
+
+      <div class="filters" role="group" aria-label="Filter projects by type" data-project-filters>
+        {
+          filters.map((filter) => (
+            <button
+              class="filter-btn"
+              type="button"
+              data-filter={filter.id}
+              aria-pressed={filter.id === 'all' ? 'true' : 'false'}
+            >
+              {filter.label}
+              <span class="filter-count">{countFor(filter.id)}</span>
+            </button>
+          ))
+        }
+      </div>
+      <p class="visually-hidden" role="status" data-project-status></p>
+
+      <div class="card-grid card-grid--3 gallery" data-project-grid>
+        {projects.map((project, index) => <ProjectCard project={project} delay={(index % 3) * 80} />)}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand title="Have a project in mind?" />
+</BaseLayout>
+
+<script>
+  const filterBar = document.querySelector<HTMLElement>('[data-project-filters]');
+  const grid = document.querySelector<HTMLElement>('[data-project-grid]');
+  const status = document.querySelector<HTMLElement>('[data-project-status]');
+
+  if (filterBar && grid && status) {
+    const buttons = Array.from(filterBar.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-category]'));
+    const valid = new Set(buttons.map((button) => button.dataset.filter));
+
+    const apply = (filter: string, announce: boolean) => {
+      let shown = 0;
+      cards.forEach((card) => {
+        const match = filter === 'all' || card.dataset.category === filter;
+        card.hidden = !match;
+        if (match) {
+          shown += 1;
+          card.classList.add('is-visible');
+        }
+      });
+      buttons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.filter === filter)));
+
+      const label = filter === 'all' ? '' : `${filter} `;
+      if (announce) {
+        status.textContent = `Showing ${shown} ${label}project${shown === 1 ? '' : 's'}`;
+        grid.classList.add('is-filtered');
+      }
+
+      const url = new URL(window.location.href);
+      if (filter === 'all') url.searchParams.delete('type');
+      else url.searchParams.set('type', filter);
+      history.replaceState(null, '', url);
+    };
+
+    buttons.forEach((button) => button.addEventListener('click', () => apply(button.dataset.filter ?? 'all', true)));
+
+    // Support links like /projects/?type=industrial
+    const initial = new URLSearchParams(window.location.search).get('type');
+    if (initial && valid.has(initial)) apply(initial, false);
+  }
+</script>
+
+<style>
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.875rem;
+    padding: 0.5rem 0.75rem 0.5rem 1.1rem;
+    border: 2px solid var(--field-border);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 700;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--ink);
+  }
+
+  .filter-btn[aria-pressed='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .filter-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 1.6rem;
+    height: 1.6rem;
+    padding-inline: 0.4rem;
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--text);
+    font-size: 0.8125rem;
+  }
+
+  .filter-btn[aria-pressed='true'] .filter-count {
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .gallery :global([hidden]) {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .gallery.is-filtered :global(.project-card:not([hidden])) {
+      animation: card-in 0.35s var(--ease-out);
+    }
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+</style>

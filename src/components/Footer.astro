@@ -1,0 +1,234 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import PlaceholderText from './PlaceholderText.astro';
+import { site, fullAddress, mapsDirectionsUrl } from '../data/site';
+import { services } from '../data/services';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer theme-ink">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a class="footer-logo" href="/"><Logo /></a>
+      <p class="footer-about">
+        Licensed and insured electrical contractors based in Epping, in Melbourne’s north. Over 20 years in the
+        trade.
+      </p>
+      <ul class="footer-licence" role="list">
+        <li>REC No. <PlaceholderText value={site.licence.rec} /></li>
+        <li>ABN <PlaceholderText value={site.licence.abn} /></li>
+      </ul>
+    </div>
+
+    <nav class="footer-col" aria-labelledby="footer-services">
+      <h2 id="footer-services" class="footer-heading">Services</h2>
+      <ul class="footer-links" role="list">
+        {
+          services.map((service) => (
+            <li>
+              <a href={`/services/${service.slug}/`}>{service.name}</a>
+            </li>
+          ))
+        }
+        <li><a href="/services/">All services</a></li>
+      </ul>
+    </nav>
+
+    <nav class="footer-col" aria-labelledby="footer-company">
+      <h2 id="footer-company" class="footer-heading">Company</h2>
+      <ul class="footer-links" role="list">
+        <li><a href="/projects/">Projects</a></li>
+        <li><a href="/about/">About us</a></li>
+        <li><a href="/contact/">Contact</a></li>
+        <li><a href="/contact/#quote">Get a free quote</a></li>
+      </ul>
+    </nav>
+
+    <div class="footer-col">
+      <h2 class="footer-heading">Contact</h2>
+      <ul class="footer-contact" role="list">
+        <li>
+          <Icon name="phone" />
+          <a href={site.phone.href}>{site.phone.display}</a>
+          <span class="footer-note">Ask for {site.contactName}</span>
+        </li>
+        <li>
+          <Icon name="mail" />
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+        </li>
+        <li>
+          <Icon name="mapPin" />
+          <a href={mapsDirectionsUrl} target="_blank" rel="noopener">
+            {fullAddress}<span class="visually-hidden"> (opens Google Maps in a new tab)</span>
+          </a>
+        </li>
+      </ul>
+      <ul class="footer-social" role="list">
+        <li>
+          <a href={site.social.instagram.url} target="_blank" rel="noopener">
+            <Icon name="instagram" />
+            <span class="visually-hidden">Instagram (opens in a new tab)</span>
+          </a>
+        </li>
+        <li>
+          <a href={site.social.facebook.url} target="_blank" rel="noopener">
+            <Icon name="facebook" />
+            <span class="visually-hidden">Facebook (opens in a new tab)</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>&copy; {year} {site.name}</p>
+    <p>Electricians in {site.address.suburb}, {site.address.region}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-top: clamp(3.5rem, 3rem + 3vw, 5rem);
+    font-size: 1rem;
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: 2.5rem;
+    padding-bottom: 3rem;
+  }
+
+  @media (min-width: 40em) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .footer-grid {
+      grid-template-columns: 1.5fr 0.8fr 0.8fr 1.4fr;
+      gap: 3rem;
+    }
+
+    .footer-brand {
+      grid-column: auto;
+    }
+  }
+
+  .footer-logo {
+    display: inline-flex;
+    text-decoration: none;
+  }
+
+  .footer-about {
+    max-width: 34ch;
+    margin-top: 1.25rem;
+    color: var(--muted-on-dark);
+  }
+
+  .footer-licence {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    font-size: 0.9375rem;
+    color: var(--muted-on-dark);
+  }
+
+  .footer-heading {
+    margin-bottom: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--yellow);
+  }
+
+  .footer-links {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .footer-links a {
+    display: inline-block;
+    padding: 0.35rem 0;
+    text-decoration: none;
+    color: var(--text-on-dark);
+  }
+
+  .footer-links a:hover {
+    color: var(--yellow);
+    text-decoration: underline;
+  }
+
+  .footer-contact {
+    --icon-size: 1.15rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .footer-contact li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.7rem;
+    align-items: start;
+  }
+
+  .footer-contact :global(.icon) {
+    margin-top: 0.2rem;
+    color: var(--yellow);
+  }
+
+  .footer-contact a {
+    overflow-wrap: anywhere;
+    text-decoration-color: var(--yellow);
+  }
+
+  .footer-note {
+    grid-column: 2;
+    font-size: 0.875rem;
+    color: var(--muted-on-dark);
+  }
+
+  .footer-social {
+    --icon-size: 1.25rem;
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  .footer-social a {
+    display: grid;
+    place-items: center;
+    width: 2.875rem;
+    height: 2.875rem;
+    border: 1px solid var(--line-on-dark);
+    border-radius: 50%;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .footer-social a:hover {
+    border-color: var(--yellow);
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--line-on-dark);
+    font-size: 0.875rem;
+    color: var(--muted-on-dark);
+  }
+</style>

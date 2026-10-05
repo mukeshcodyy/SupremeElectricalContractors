@@ -1,0 +1,256 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import Photo from '../components/Photo.astro';
+import PlaceholderText from '../components/PlaceholderText.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import type { IconName } from '../data/icons';
+import { site } from '../data/site';
+import { breadcrumbSchema } from '../lib/schema';
+
+const base = Astro.site!;
+const breadcrumbs = [
+  { name: 'Home', path: '/' },
+  { name: 'About', path: '/about/' },
+];
+
+const values: { icon: IconName; title: string; text: string }[] = [
+  {
+    icon: 'shield',
+    title: 'Safety first',
+    text: 'Every job is done to Australian Standards, with the safety of your family, staff and site the priority.',
+  },
+  {
+    icon: 'messageSquare',
+    title: 'Straight answers',
+    text: 'Clear quotes and honest advice. We’ll tell you what you need – and what you don’t.',
+  },
+  {
+    icon: 'badgeCheck',
+    title: 'Quality workmanship',
+    text: 'Neat, reliable work that’s built to last and done right the first time.',
+  },
+  {
+    icon: 'home',
+    title: 'Respect for your place',
+    text: 'We treat your home or workplace with care and leave it clean and tidy.',
+  },
+];
+
+const credentials: { icon: IconName; label: string; value: string }[] = [
+  { icon: 'idCard', label: 'Registered Electrical Contractor (REC) No.', value: site.licence.rec },
+  { icon: 'badgeCheck', label: 'Electrical licence No.', value: site.licence.electrical },
+  { icon: 'umbrella', label: 'Public liability insurance', value: site.licence.insurance },
+  { icon: 'briefcase', label: 'ABN', value: site.licence.abn },
+];
+---
+
+<BaseLayout
+  title="About Us | Supreme Electrical Contractors, Epping"
+  description="Over 20 years of electrical experience for homes, businesses and industry, from our base in Epping in Melbourne’s north. Licensed and insured electricians."
+  schema={[breadcrumbSchema(breadcrumbs, base)]}
+>
+  <PageHero
+    breadcrumbs={breadcrumbs}
+    eyebrow="About us"
+    title="About Supreme Electrical Contractors"
+    lead="Over 20 years in the electrical trade, looking after homes, businesses and industry from our base in Epping."
+  />
+
+  <section class="section theme-light" aria-labelledby="story-title">
+    <div class="container story-grid">
+      <div class="story-copy" data-reveal>
+        <p class="eyebrow">Our story</p>
+        <h2 id="story-title">20+ years in the trade</h2>
+        <div class="prose story-prose">
+          <p>
+            Supreme Electrical Contractors is built on more than two decades of hands-on experience in the
+            electrical trade, across residential, commercial and industrial work.
+          </p>
+          <p>
+            That experience shapes how we work: turn up when we say we will, explain the job in plain English, quote
+            it clearly and get it right the first time. When you call, you’ll speak with {site.contactName} directly.
+          </p>
+          <p class="story-placeholder">
+            <PlaceholderText
+              value="[PLACEHOLDER - Alex’s story: how you got started in the trade, the work you enjoy most, and why you started Supreme Electrical Contractors]"
+            />
+          </p>
+        </div>
+      </div>
+      <div class="story-media" data-reveal>
+        <Photo
+          file="team-on-site.jpg"
+          alt="Two Supreme Electrical Contractors team members checking plans on a construction site"
+          ratio="4 / 5"
+          position="42% 50%"
+          sizes="(min-width: 64em) 40vw, 100vw"
+        />
+        <p class="story-media-caption">The Supreme Electrical team on site</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section theme-paper" aria-labelledby="values-title">
+    <div class="container">
+      <SectionHeading id="values-title" eyebrow="Our values" title="What we stand for" />
+      <ul class="card-grid card-grid--4" role="list">
+        {
+          values.map((value, index) => (
+            <li class="value-card" data-reveal style={`--reveal-delay: ${index * 80}ms`}>
+              <span class="value-icon">
+                <Icon name={value.icon} />
+              </span>
+              <h3>{value.title}</h3>
+              <p>{value.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section theme-ink" aria-labelledby="licence-title">
+    <div class="container licence-grid">
+      <div data-reveal>
+        <p class="eyebrow">Licensing &amp; insurance</p>
+        <h2 id="licence-title">Licensed &amp; insured</h2>
+        <p class="lead">
+          All electrical work is carried out by licensed electricians, completed to Australian Standards and
+          certified as required in Victoria.
+        </p>
+      </div>
+      <dl class="credentials" data-reveal>
+        {
+          credentials.map((item) => (
+            <div class="credential">
+              <span class="credential-icon">
+                <Icon name={item.icon} />
+              </span>
+              <dt>{item.label}</dt>
+              <dd>
+                <PlaceholderText value={item.value} />
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+
+  <CtaBand />
+</BaseLayout>
+
+<style>
+  .story-grid {
+    display: grid;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  @media (min-width: 56em) {
+    .story-grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: clamp(3rem, 6vw, 6rem);
+    }
+  }
+
+  .story-prose {
+    margin-top: 1.5rem;
+    max-width: 38rem;
+    font-size: var(--step-1);
+    line-height: 1.6;
+  }
+
+  .story-placeholder {
+    font-size: var(--step-0);
+  }
+
+  .story-media-caption {
+    margin-top: 0.75rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+
+  .value-card {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding: 1.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+
+  .value-icon {
+    --icon-size: 1.5rem;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    margin-bottom: 0.4rem;
+    border-radius: var(--radius);
+    background: var(--yellow);
+    color: var(--ink);
+  }
+
+  .value-card p {
+    color: var(--muted);
+  }
+
+  .licence-grid {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 64em) {
+    .licence-grid {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 5rem;
+      align-items: center;
+    }
+  }
+
+  .credentials {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 40em) {
+    .credentials {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .credential {
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+    padding: 1.5rem;
+    border: 1px solid var(--line-on-dark);
+    border-radius: var(--radius-lg);
+    background: var(--charcoal);
+  }
+
+  .credential-icon {
+    --icon-size: 1.4rem;
+    margin-bottom: 0.4rem;
+    color: var(--yellow);
+  }
+
+  .credential dt {
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted-on-dark);
+  }
+
+  .credential dd {
+    margin: 0;
+    font-size: var(--step-1);
+    font-weight: 700;
+  }
+</style>
